@@ -1,0 +1,47 @@
+## 
+### ---------------
+###
+### Create: Jianming Zeng
+### Date: 2020-02-09 16:46:35
+### Email: jmzeng1314@163.com
+### Blog: http://www.bio-info-trainee.com/
+### Forum:  http://www.biotrainee.com/thread-1376-1-1.html
+### CAFS/SUSTC/Eli Lilly/University of Macau
+### Update Log: 2020-02-09   First version
+###
+### ---------------
+
+getwd()
+
+rm(list = ls())   
+options(stringsAsFactors = F)
+library("ChAMP")
+library("minfi")
+require(GEOquery)
+require(Biobase)
+load(file = 'step1_GSE36278_output.Rdata')
+beta.m=myLoad1$beta
+View(beta.m)
+# 后续针对 beta.m 进行差异分析, 比如 minfi 包
+grset=makeGenomicRatioSetFromMatrix(beta.m,what="Beta")
+M = getM(grset)
+group_list=myLoad1$pd$Group
+View(group_list)
+# 因为甲基化芯片是450K或者850K，几十万行的甲基化位点，统计检验通常很慢。
+dmp <- dmpFinder(M, pheno=group_list, type="categorical")
+dmpDiff=dmp[(dmp$qval<0.05) & (is.na(dmp$qval)==F),]
+dim(dmpDiff)
+
+load(file = 'step3-GSE36278-K27M-output-myDMP.Rdata')
+champDiff=myDMP[[1]]
+View(champDiff)
+
+dim(dmpDiff)
+dim(champDiff)
+length(intersect(rownames(dmpDiff),rownames(champDiff)))
+
+source('functions_DEM.R')
+visual_champ_DEM(myLoad1,myDMP,group_list,pro='test')
+
+
+
